@@ -1,0 +1,74 @@
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+The propagation delay incurred by the AA gates, such as splitters, may desynchronize the inputs arriving to the SA gate, producing a data hazard, as illustrated in Fig. \ref{spl_delay}.
+To avoid this condition, the following constraint is added to the phase assignment ILP,
+\begin{equation}
+    \phi \left( g \right) \geq \phi \left( a \right)+ \left( a\notin G_{AS} \right)\forall g\in G_{SA}, a\in FI \left( g \right),
+\end{equation}
+where the minimum stage of gate $g$ is increased by one, if the preceding gate is not AS.
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\subsection{Asynchronous paths}
+
+The sharing of DFFs by a complex unclocked path has been highlighed as early as 1991 in \cite{leiserson_1991}, where sharing of DFFs is maximized to minimize the circuit area, as illustrated in Fig. \ref{fig:shared_dff}a. 
+% A similar formulation is possible to estimate the number DFFs required for a path with multiple fanout
+% Due to the DFF sharing in a path with multiple fanouts, the number of DFFs is determined by the fanout with the latest global phase,
+% Basically, need to say that estimating the number precisely is difficult
+While estimating the minimum number of DFFs in such cases as a splitter tree, is relatively simple, more complex asynchronous paths, however, require more sophisticated processing and, hence, prohibitive runtime.
+% As described in section \ref{SAT_BASED_DFF_PLACEMENT}, precisely estimating the number of DFFs required by complex asynchronous path requires  processing and prohibitive runtime. 
+During the phase assignment stage we therefore use an approximate number of DFFs as
+\begin{equation}
+    C \left( \phi \left( g \right arrow FO \left( g \right) \right) \right) = \lfloor \frac{\max\limits_{a\in FO \left( g \right)} \left( \phi \left( a \right) \right) - \phi \left( g \right)}{n} \rfloor.
+    % \phi \left( a \right)+ \left( a\notin G_{AS} \right)\forall a\in FI \left( g \right),
+\end{equation}
+The exact number of DFFs is determined during the DFF insertion stage. 
+% After considering the influence of the unclocked gates on the objective and constraint functions, t
+The combined optimization problem is formulated as 
+
+\begin{equation}\label{eq:combined_cost_func}
+\min\limits_{\phi \left( g \right)\forall g\in G}
+\sum\limits_{ \left( i,j \right)\in E} \lfloor \frac{\phi \left( j \right)-\phi \left( i \right) + \left( j\in G_{SA} \right)}{n} \rfloor,
+\end{equation}
+\begin{equation*}
+\text{Subject to: }
+\end{equation*}
+\begin{equation}
+\phi \left( i \right) <    \phi \left( j \right) \forall \left( i,j \right)\in E, j\in G_{AS},
+\end{equation}
+\begin{equation}
+\phi \left( i \right) \leq \phi \left( j \right) \forall \left( i,j \right)\in E, j\notin G_{AS},
+\end{equation}
+\begin{equation}
+\lfloor \frac{\phi \left( i \right)}{n} \rfloor = 0  \forall i\in I,
+\end{equation}
+\begin{equation}
+\lfloor \frac{\phi \left( i \right)}{n} \rfloor = \lfloor \frac{\phi \left( j \right)}{n} \rfloor  \forall i,j\in O.
+\end{equation}
+
+% After completing the phase assignment, the splitters can be efficiently placed after each multifanout gate.
+% while maximizing the sharing of path balancing DFFs
+Each gate $g$ with $\#FO(g) > 1$ requires a splitter tree to copy the signal to each of the fanouts. 
+After completing the phase assignment, a splitter tree that maximizes sharing of path balancing DFFs can be produced. 
+%  can be efficiently placed after each multifanout gate.
+First, the fanouts $FO(g)$ of a gate $g$ are sorted by phase in the ascending order, producing a sequence $A=[a_0, a_1,\cdots,a_k]$, $\sigma(a_i) \leq \sigma(a_j) \iff i<j$.
+Next, the splitters $[s_0,...,s_{k-1}]$ are inserted at phases $a_0,\cdots,a_{k-1}$. 
+The splitter $s_0$ has a gate $g$ as a fanin.
+Each splitter $s_i$ has a splitter $s_{i-1}$ as a fanin, except $s_0$ whose fanin is the gate $g$. 
+Each splitter $s_i$ has the $a_i$ and $s_{i+1}$ as a fanout, except $s_{k-1}$ whose fanouts are $a_{k-1}$ and $a_k$.
+Using this method, the splitters are placed as late as possible within the network, maximizing sharing of the datapath.
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+(around line 427)
+While the notion of stage is primarily relevant for the clocked gates, the unclocked gates are also assigned a stage.
+It is however important to also assign a stage to the AA and SA elements, since a stage of an unclocked element imposes different constraints on DFF insertion process.
+Consider two networks containing an asynchronous datapath illustrated in Fig. \ref{splitter_merger}.
+Both networks realize the same function, however, the possible locations of path balancing DFFs are different. 
+By defining the stage of the unclocked gate, the phase and epoch of the path balancing DFFs within the datapath can be determined. 
+
+
+
+
+
+
